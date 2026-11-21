@@ -56,21 +56,51 @@ function prepareMessage(form) {
       return `${label}: ${displayValue}`;
     });
   const title = form.classList.contains("rsvp-form")
-    ? "Preston & Rachel — Reception RSVP"
+    ? "Preston & Rachel — Wedding RSVP"
     : form.closest(".playlist")
       ? "Preston & Rachel — Song Request"
       : "Preston & Rachel — Guestbook Note";
   return [title, ...fields].join("\n");
 }
 
+const RSVP_ENDPOINT = "";
+
 document.querySelectorAll(".preview-form").forEach((form) => {
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
 
     const notice = form.querySelector(".form-notice");
     const message = prepareMessage(form);
     notice.replaceChildren();
+
+    if (form.classList.contains("rsvp-form") && RSVP_ENDPOINT) {
+      const data = new FormData(form);
+      const attendance = data.get("attendance");
+      try {
+        await fetch(RSVP_ENDPOINT, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            timestamp: new Date().toISOString(),
+            name: data.get("name"),
+            attendance: attendance === "yes" ? "Joyfully accepts" : "Regretfully declines",
+            guests: data.get("guests"),
+            message: data.get("coupleMessage") || ""
+          })
+        });
+        const confirmation = document.createElement("span");
+        confirmation.textContent = "Thank you — your RSVP has been submitted.";
+        notice.append(confirmation);
+        form.reset();
+      } catch {
+        const instructions = document.createElement("span");
+        instructions.textContent = "We couldn't submit your RSVP. Please try again.";
+        notice.append(instructions);
+      }
+      return;
+    }
 
     const instructions = document.createElement("span");
     instructions.textContent = "Message prepared — nothing has been sent or saved.";
