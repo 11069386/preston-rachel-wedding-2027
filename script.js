@@ -63,7 +63,7 @@ function prepareMessage(form) {
   return [title, ...fields].join("\n");
 }
 
-const RSVP_ENDPOINT = "";
+const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbw9ujMgUarJO23btP5L1Ui0bjoh8jNtqgHCYv1zq8naGmxQhBAtDI0Gpzjh2AJehCVg/exec";
 
 document.querySelectorAll(".preview-form").forEach((form) => {
   form.addEventListener("submit", async (event) => {
