@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      :root { color-scheme: light; --forest:#354d3c; --moss:#71866c; --paper:#fffdf7; --cream:#f6f3e8; --ink:#343a32; --muted:#70766c; --line:#dfe3d8; --rose:#bd7773; }
+      * { box-sizing:border-box; }
+      body { margin:0; background:var(--cream); color:var(--ink); font:14px/1.5 Arial,sans-serif; }
+      header { padding:25px max(22px,calc((100% - 1180px)/2)); background:var(--forest); color:white; }
+      header p { margin:0 0 5px; color:#d5e0d0; font-size:11px; font-weight:bold; letter-spacing:.15em; text-transform:uppercase; }
+      h1 { margin:0; font:500 clamp(26px,4vw,38px)/1.15 Georgia,serif; }
+      main { max-width:1180px; margin:0 auto; padding:26px 20px 60px; }
+      .toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; }
+      .toolbar h2 { margin:0; font:500 24px Georgia,serif; }
+      button { min-height:40px; padding:0 15px; border:1px solid var(--moss); border-radius:3px; background:var(--moss); color:white; font:600 12px Arial,sans-serif; cursor:pointer; }
+      button:hover { filter:brightness(.94); }
+      button.secondary { background:transparent; color:var(--forest); }
+      button.danger { border-color:#c99591; background:transparent; color:#8c4945; }
+      button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline:3px solid #d5ac64; outline-offset:2px; }
+      .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+      .stat { padding:16px 18px; background:var(--paper); border-top:2px solid #b5c3a9; }
+      .stat span { display:block; color:var(--muted); font-size:10px; font-weight:bold; letter-spacing:.1em; text-transform:uppercase; }
+      .stat strong { display:block; margin-top:5px; color:var(--forest); font:500 28px Georgia,serif; }
+      .panel { padding:18px; background:var(--paper); }
+      .filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+      input, select, textarea { min-height:40px; padding:9px 11px; border:1px solid var(--line); border-radius:2px; background:white; color:var(--ink); font:13px Arial,sans-serif; }
+      .filters input { flex:1 1 220px; }
+      .filters select { min-width:190px; }
+      .table-wrap { overflow-x:auto; }
+      table { width:100%; border-collapse:collapse; text-align:left; }
+      th, td { padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+      th { color:var(--muted); font-size:10px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+      td { font-size:12px; }
+      td.name { min-width:140px; font-weight:bold; }
+      td.message { min-width:180px; max-width:280px; white-space:pre-wrap; overflow-wrap:anywhere; }
+      td.actions { min-width:140px; white-space:nowrap; }
+      td.actions button { min-height:32px; margin-right:4px; padding:0 9px; font-size:11px; }
+      .empty { padding:30px 12px; color:var(--muted); text-align:center; }
+      .entry { display:none; margin-bottom:18px; border-left:3px solid var(--moss); }
+      .entry.open { display:block; }
+      .entry h3 { margin:0 0 12px; font:500 20px Georgia,serif; }
+      .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+      .field { display:grid; gap:5px; }
+      .field.full { grid-column:1/-1; }
+      label { color:#555d52; font-size:11px; font-weight:bold; }
+      textarea { min-height:74px; resize:vertical; }
+      .form-actions { display:flex; gap:8px; margin-top:14px; }
+      .status { min-height:20px; margin:10px 0 0; color:var(--forest); font-size:12px; }
+      .status.error { color:#9c3934; }
+      .hint { margin:14px 0 0; color:var(--muted); font-size:11px; }
+      @media(max-width:650px) {
+        .stats { grid-template-columns:1fr; gap:8px; }
+        .stat { display:flex; align-items:center; justify-content:space-between; }
+        .stat strong { margin:0; }
+        .form-grid { grid-template-columns:1fr; }
+        .field.full { grid-column:auto; }
+        .panel { padding:12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p>Preston &amp; Rachel · September 18, 2027</p>
+      <h1>Wedding RSVP Manager</h1>
+    </header>
+    <main>
+      <div class="toolbar">
+        <h2>Guest responses</h2>
+        <div>
+          <button class="secondary" type="button" id="refresh">Refresh list</button>
+          <button type="button" id="add-toggle">Add a response</button>
+        </div>
+      </div>
+      <section class="stats" aria-label="RSVP summary">
+        <div class="stat"><span>Responses</span><strong id="response-count">—</strong></div>
+        <div class="stat"><span>Accepting</span><strong id="accept-count">—</strong></div>
+        <div class="stat"><span>Guests attending</span><strong id="guest-count">—</strong></div>
+      </section>
+      <form class="panel entry" id="entry-form">
+        <h3 id="form-title">Add a response</h3>
+        <input type="hidden" name="row">
+        <div class="form-grid">
+          <div class="field">
+            <label for="guest-name">Guest name</label>
+            <input id="guest-name" name="name" maxlength="200" required>
+          </div>
+          <div class="field">
+            <label for="attendance">Response</label>
+            <select id="attendance" name="attendance" required>
+              <option value="Joyfully accepts">Joyfully accepts</option>
+              <option value="Regretfully declines">Regretfully declines</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="guests">Number attending</label>
+            <input id="guests" name="guests" type="number" min="1" max="50" value="1" required>
+          </div>
+          <div class="field full">
+            <label for="message">Message <span>(optional)</span></label>
+            <textarea id="message" name="message" maxlength="1000"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="save-button">Save response</button>
+          <button class="secondary" type="button" id="cancel">Cancel</button>
+        </div>
+        <p class="status" id="form-status" role="status"></p>
+      </form>
+      <section class="panel">
+        <div class="filters">
+          <input type="search" id="search" placeholder="Search names or messages" aria-label="Search RSVPs">
+          <select id="status-filter" aria-label="Filter by response">
+            <option value="">All responses</option>
+            <option value="Joyfully accepts">Accepting</option>
+            <option value="Regretfully declines">Declined</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Received</th><th>Name</th><th>Response</th><th>Guests</th><th>Message</th><th>Actions</th></tr></thead>
+            <tbody id="rsvp-rows"><tr><td class="empty" colspan="6">Loading responses…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="status" id="list-status" role="status"></p>
+        <p class="hint">Guest responses from the website and entries added here are stored in the same RSVP spreadsheet.</p>
+      </section>
+    </main>
+    <script>
+      const ACCEPTS = "Joyfully accepts";
+      const DECLINES = "Regretfully declines";
+      let rsvps = [];
+      const form = document.querySelector("#entry-form");
+
+      function showStatus(element, message, isError = false) {
+        element.textContent = message;
+        element.classList.toggle("error", isError);
+      }
+
+      function loadRsvps() {
+        const body = document.querySelector("#rsvp-rows");
+        body.innerHTML = '<tr><td class="empty" colspan="6">Loading responses…</td></tr>';
+        google.script.run
+          .withSuccessHandler((items) => {
+            rsvps = items;
+            renderRsvps();
+            showStatus(document.querySelector("#list-status"), "");
+          })
+          .withFailureHandler((error) => {
+            body.innerHTML = '<tr><td class="empty" colspan="6">Could not load responses.</td></tr>';
+            showStatus(document.querySelector("#list-status"), error.message || "Could not load responses.", true);
+          })
+          .listRsvps();
+      }
+
+      function renderRsvps() {
+        const accepted = rsvps.filter((rsvp) => rsvp.attendance === ACCEPTS);
+        document.querySelector("#response-count").textContent = rsvps.length;
+        document.querySelector("#accept-count").textContent = accepted.length;
+        document.querySelector("#guest-count").textContent = accepted.reduce((sum, rsvp) => sum + (Number(rsvp.guests) || 0), 0);
+
+        const search = document.querySelector("#search").value.trim().toLowerCase();
+        const filter = document.querySelector("#status-filter").value;
+        const visible = rsvps.filter((rsvp) => {
+          const matchesSearch = `${rsvp.name} ${rsvp.message}`.toLowerCase().includes(search);
+          return matchesSearch && (!filter || rsvp.attendance === filter);
+        });
+        const body = document.querySelector("#rsvp-rows");
+        body.replaceChildren();
+        if (!visible.length) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.className = "empty";
+          cell.colSpan = 6;
+          cell.textContent = rsvps.length ? "No responses match your filters." : "No RSVPs yet. Add a response or wait for guests to reply.";
+          row.append(cell);
+          body.append(row);
+          return;
+        }
+
+        visible.forEach((rsvp) => {
+          const row = document.createElement("tr");
+          [rsvp.timestamp, rsvp.name, rsvp.attendance, rsvp.guests || "—", rsvp.message || "—"].forEach((value, index) => {
+            const cell = document.createElement("td");
+            if (index === 1) cell.className = "name";
+            if (index === 4) cell.className = "message";
+            cell.textContent = value;
+            row.append(cell);
+          });
+          const actions = document.createElement("td");
+          actions.className = "actions";
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "secondary";
+          edit.textContent = "Edit";
+          edit.addEventListener("click", () => editRsvp(rsvp));
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "danger";
+          remove.textContent = "Delete";
+          remove.addEventListener("click", () => removeRsvp(rsvp));
+          actions.append(edit, remove);
+          row.append(actions);
+          body.append(row);
+        });
+      }
+
+      function editRsvp(rsvp) {
+        form.elements.row.value = rsvp.row;
+        form.elements.name.value = rsvp.name;
+        form.elements.attendance.value = rsvp.attendance;
+        form.elements.guests.value = Number(rsvp.guests) || 1;
+        form.elements.message.value = rsvp.message;
+        document.querySelector("#form-title").textContent = "Edit response";
+        document.querySelector("#save-button").textContent = "Save changes";
+        form.classList.add("open");
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function resetForm() {
+        form.reset();
+        form.elements.row.value = "";
+        form.elements.guests.disabled = false;
+        form.elements.guests.required = true;
+        document.querySelector("#form-title").textContent = "Add a response";
+        document.querySelector("#save-button").textContent = "Save response";
+        showStatus(document.querySelector("#form-status"), "");
+        form.classList.remove("open");
+      }
+
+      function removeRsvp(rsvp) {
+        if (!window.confirm(`Delete the RSVP for ${rsvp.name}? This cannot be undone.`)) return;
+        google.script.run
+          .withSuccessHandler(() => {
+            showStatus(document.querySelector("#list-status"), "RSVP deleted.");
+            loadRsvps();
+          })
+          .withFailureHandler((error) => showStatus(document.querySelector("#list-status"), error.message || "Could not delete RSVP.", true))
+          .deleteRsvp(rsvp.row);
+      }
+
+      document.querySelector("#add-toggle").addEventListener("click", () => {
+        resetForm();
+        form.classList.add("open");
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+        form.elements.name.focus();
+      });
+      document.querySelector("#refresh").addEventListener("click", loadRsvps);
+      document.querySelector("#cancel").addEventListener("click", resetForm);
+      document.querySelector("#search").addEventListener("input", renderRsvps);
+      document.querySelector("#status-filter").addEventListener("change", renderRsvps);
+      document.querySelector("#attendance").addEventListener("change", (event) => {
+        const guests = form.elements.guests;
+        const declining = event.target.value === DECLINES;
+        guests.disabled = declining;
+        guests.required = !declining;
+        if (declining) guests.value = 0;
+        else if (Number(guests.value) < 1) guests.value = 1;
+      });
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const data = Object.fromEntries(new FormData(form).entries());
+        data.guests = Number(data.guests) || 0;
+        const isEdit = Boolean(data.row);
+        const status = document.querySelector("#form-status");
+        showStatus(status, "Saving…");
+        const runner = google.script.run
+          .withSuccessHandler(() => {
+            showStatus(status, "Saved.");
+            resetForm();
+            loadRsvps();
+          })
+          .withFailureHandler((error) => showStatus(status, error.message || "Could not save response.", true));
+        if (isEdit) runner.updateRsvp(data);
+        else runner.addManualRsvp(data);
+      });
+
+      loadRsvps();
+    </script>
+  </body>
+</html>
