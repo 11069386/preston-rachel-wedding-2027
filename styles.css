@@ -48,6 +48,9 @@ button, input, select, textarea { font: inherit; }
 .hero-rule { margin: 16px auto 10px; color: var(--orange); font-size: 19px; line-height: 1; }
 .hero-date { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .hero-venue { margin: 7px 0 19px; color: var(--muted); font-size: 13px; }
+.countdown { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin: -7px 0 18px; color: rgba(255,255,255,.92); }
+.countdown-number { color: #fff; font: 500 25px var(--serif); }
+.countdown-label { font: 11px var(--sans); letter-spacing: .04em; }
 .button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: 15px; padding: 0 22px; border: 1px solid transparent; border-radius: 2px; font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .11em; text-decoration: none; text-transform: uppercase; transition: background .2s, color .2s, transform .2s; cursor: pointer; }
 .button:hover { transform: translateY(-2px); }
 .button-primary { background: var(--sage); color: white; }
@@ -124,6 +127,13 @@ h2 em { color: var(--rose); font: normal 1.08em var(--script); }
 .rsvp-card strong { font: 500 26px var(--serif); }
 .rsvp-card > span:nth-of-type(2) { color: var(--muted); font-size: 12px; }
 .rsvp-card-action { display: inline-flex; gap: 10px; margin-top: 5px; padding: 12px 18px; background: var(--sage); color: white; font: 700 10px var(--sans); letter-spacing: .1em; text-transform: uppercase; }
+.photos { background: var(--paper); text-align: center; }
+.photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.photo-grid figure { position: relative; min-height: 300px; margin: 0; overflow: hidden; background: #e7e9dd; text-align: left; }
+.photo-grid img { display: block; width: 100%; height: 100%; min-height: 300px; object-fit: cover; transition: transform .4s ease; }
+.photo-grid figure:hover img { transform: scale(1.025); }
+.photo-grid figcaption { position: absolute; right: 0; bottom: 0; left: 0; padding: 40px 18px 14px; background: linear-gradient(transparent, rgba(38,56,45,.75)); color: white; font: 17px var(--serif); }
+.photo-note { margin: 20px 0 0; color: var(--muted); font-size: 11px; font-style: italic; }
 .rsvp-form { display: grid; width: min(100%, 440px); gap: 9px; margin-top: 28px; text-align: left; }
 .rsvp-form label, .mini-form label { margin-top: 7px; color: #55594f; font-family: var(--sans); font-size: 11px; font-weight: 600; }
 label span { color: var(--muted); font-weight: 400; }
@@ -251,6 +261,9 @@ textarea { resize: vertical; }
 .hero h1 em { color: #edb5b1; }
 .hero-intro, .hero-venue { color: rgba(255,255,255,.92); }
 .hero-date { color: white; }
+.hero .countdown { justify-content: center; flex-wrap: nowrap; margin: 0 0 18px; color: rgba(255,255,255,.92); }
+.hero .countdown-number { color: white; font-size: 25px; }
+.hero .countdown-label { color: rgba(255,255,255,.92); }
 .hero-rule { color: #f1ca78; }
 .hero-flower { display: none; }
 .button-light { background: rgba(255,253,247,.94); color: var(--forest-dark); }
@@ -332,4 +345,6 @@ textarea { resize: vertical; }
   .wildflower-photo { height: 430px; }
   .explore-grid { grid-template-columns: 1fr; }
   .explore-card { min-height: 250px; }
+  .photo-grid { grid-template-columns: 1fr; }
+  .photo-grid figure, .photo-grid img { min-height: 240px; }
 }
