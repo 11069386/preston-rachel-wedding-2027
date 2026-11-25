@@ -117,6 +117,13 @@ h2 em { color: var(--rose); font: normal 1.08em var(--script); }
 
 .rsvp { display: grid; justify-items: center; background: #e8ebdf; text-align: center; }
 .rsvp-flower { margin-bottom: 12px; color: var(--orange); font-size: 29px; }
+.rsvp-card { display: grid; width: min(100%, 520px); justify-items: center; gap: 10px; margin-top: 30px; padding: 34px 28px; border: 1px solid #c5cfbb; background: var(--paper); color: var(--ink); text-decoration: none; transition: transform .2s, box-shadow .2s, border-color .2s; }
+.rsvp-card:hover, .rsvp-card:focus-visible { transform: translateY(-3px); border-color: var(--sage); box-shadow: 0 12px 30px rgba(48,66,48,.1); }
+.rsvp-card:focus-visible { outline: 3px solid var(--sage); outline-offset: 3px; }
+.rsvp-card-flower { color: var(--rose); font-size: 28px; }
+.rsvp-card strong { font: 500 26px var(--serif); }
+.rsvp-card > span:nth-of-type(2) { color: var(--muted); font-size: 12px; }
+.rsvp-card-action { display: inline-flex; gap: 10px; margin-top: 5px; padding: 12px 18px; background: var(--sage); color: white; font: 700 10px var(--sans); letter-spacing: .1em; text-transform: uppercase; }
 .rsvp-form { display: grid; width: min(100%, 440px); gap: 9px; margin-top: 28px; text-align: left; }
 .rsvp-form label, .mini-form label { margin-top: 7px; color: #55594f; font-family: var(--sans); font-size: 11px; font-weight: 600; }
 label span { color: var(--muted); font-weight: 400; }

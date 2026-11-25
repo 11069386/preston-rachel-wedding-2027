@@ -1,32 +1,3 @@
-const weddingDate = new Date(2027, 8, 18);
-
-function updateCountdown() {
-  if (!document.querySelector("#countdown-days")) return;
-  const remaining = weddingDate.getTime() - Date.now();
-  const caption = document.querySelector("#countdown-caption");
-
-  if (remaining <= 0) {
-    document.querySelector("#countdown-days").textContent = "0";
-    document.querySelector("#countdown-hours").textContent = "0";
-    document.querySelector("#countdown-minutes").textContent = "0";
-    document.querySelector("#countdown-seconds").textContent = "0";
-    caption.textContent = "today is the day!";
-    return;
-  }
-
-  const days = Math.floor(remaining / 86_400_000);
-  const hours = Math.floor((remaining % 86_400_000) / 3_600_000);
-  const minutes = Math.floor((remaining % 3_600_000) / 60_000);
-  const seconds = Math.floor((remaining % 60_000) / 1000);
-  document.querySelector("#countdown-days").textContent = days.toLocaleString();
-  document.querySelector("#countdown-hours").textContent = String(hours).padStart(2, "0");
-  document.querySelector("#countdown-minutes").textContent = String(minutes).padStart(2, "0");
-  document.querySelector("#countdown-seconds").textContent = String(seconds).padStart(2, "0");
-}
-
-updateCountdown();
-window.setInterval(updateCountdown, 1000);
-
 const menuToggle = document.querySelector(".menu-toggle");
 const siteNav = document.querySelector(".site-nav");
 
@@ -37,89 +8,8 @@ menuToggle.addEventListener("click", () => {
 });
 
 siteNav.addEventListener("click", (event) => {
-  if (event.target instanceof HTMLAnchorElement) {
+  if (event.target instanceof Element && event.target.closest("a")) {
     menuToggle.setAttribute("aria-expanded", "false");
     siteNav.classList.remove("is-open");
   }
-});
-
-function prepareMessage(form) {
-  const fields = [...new FormData(form).entries()]
-    .filter(([, value]) => String(value).trim() !== "")
-    .map(([name, value]) => {
-      const control = form.elements.namedItem(name);
-      const label = control?.labels?.[0]?.textContent.trim()
-        || name.replace(/([A-Z])/g, " $1");
-      const displayValue = control instanceof HTMLSelectElement
-        ? control.selectedOptions[0].textContent
-        : value;
-      return `${label}: ${displayValue}`;
-    });
-  const title = form.classList.contains("rsvp-form")
-    ? "Preston & Rachel — Wedding RSVP"
-    : form.closest(".playlist")
-      ? "Preston & Rachel — Song Request"
-      : "Preston & Rachel — Guestbook Note";
-  return [title, ...fields].join("\n");
-}
-
-const RSVP_ENDPOINT = "https://script.google.com/macros/s/AKfycbw9ujMgUarJO23btP5L1Ui0bjoh8jNtqgHCYv1zq8naGmxQhBAtDI0Gpzjh2AJehCVg/exec";
-
-document.querySelectorAll(".preview-form").forEach((form) => {
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
-
-    const notice = form.querySelector(".form-notice");
-    const message = prepareMessage(form);
-    notice.replaceChildren();
-
-    if (form.classList.contains("rsvp-form") && RSVP_ENDPOINT) {
-      const data = new FormData(form);
-      const attendance = data.get("attendance");
-      try {
-        await fetch(RSVP_ENDPOINT, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            timestamp: new Date().toISOString(),
-            name: data.get("name"),
-            attendance: attendance === "yes" ? "Joyfully accepts" : "Regretfully declines",
-            guests: data.get("guests"),
-            message: data.get("coupleMessage") || ""
-          })
-        });
-        const confirmation = document.createElement("span");
-        confirmation.textContent = "Thank you — your RSVP has been submitted.";
-        notice.append(confirmation);
-        form.reset();
-      } catch {
-        const instructions = document.createElement("span");
-        instructions.textContent = "We couldn't submit your RSVP. Please try again.";
-        notice.append(instructions);
-      }
-      return;
-    }
-
-    const instructions = document.createElement("span");
-    instructions.textContent = "Message prepared — nothing has been sent or saved.";
-    const preview = document.createElement("span");
-    preview.className = "prepared-message";
-    preview.textContent = message;
-    const copyButton = document.createElement("button");
-    copyButton.className = "copy-button";
-    copyButton.type = "button";
-    copyButton.textContent = "Copy message";
-    copyButton.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(message);
-        copyButton.textContent = "Copied";
-      } catch {
-        copyButton.textContent = "Copy unavailable — select the message";
-      }
-    });
-
-    notice.append(instructions, preview, copyButton);
-  });
 });
